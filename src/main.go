@@ -10,9 +10,7 @@ import (
 	"github.com/lupppig/movy/internal/storage/postgres"
 )
 
-
-
-
+//go:generate oapi-codegen --config=./internal/openapi/openapi-config/config.yaml ./internal/openapi/openapi.yaml
 
 func main()  {
 	logger :=  logger.NewLogger()
@@ -21,13 +19,20 @@ func main()  {
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load config variables...")
 	}
-	_, err = postgres.ConnectPostgreDB(config.DATABASE_URL, logger)
+	db, err := postgres.ConnectPostgreDB(config.DATABASE_URL, logger)
 	if err != nil {
 		logger.Error().Err(err).Msg("connecting to database failed check DSN string or database is up and running")
 		return
 	}
 
-	router := Router(*config, logger)
+
+	// run go migration
+	if err := RunMigrations(config.DATABASE_URL); err != nil {
+		logger.Error().Err(err).Msg("failed to perform migration")
+		return
+	}
+
+	router := Router(*config, logger, db)
 	port := config.APP_PORT
 
 	srv := &http.Server{

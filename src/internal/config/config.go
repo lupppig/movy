@@ -13,6 +13,7 @@ type APPConfig struct {
 	API_VERSION string `mapstructure:"API_VERSION"`
 	APP_ENV     string `mapstructure:"APP_ENV"`
 	APP_PORT    string `mapstructure:"APP_PORT"`
+	APP_HOST string `mapstructure:"APP_HOST"`
 }
 
 type DatabaseConfig struct {

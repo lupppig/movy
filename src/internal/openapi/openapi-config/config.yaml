@@ -1,0 +1,5 @@
+package: openapi
+generate:
+  models: true     # This creates your Go structs
+  gin-server: true # This creates the Gin boilerplate
+output: internal/openapi/api.gen.go
