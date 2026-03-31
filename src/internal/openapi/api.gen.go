@@ -16,17 +16,34 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
-// Error defines model for Error.
-type Error struct {
-	Code    string  `json:"code"`
-	Details *string `json:"details,omitempty"`
-	Message string  `json:"message"`
+// BadRequestError defines model for BadRequestError.
+type BadRequestError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // FieldError defines model for FieldError.
 type FieldError struct {
 	Field  string `json:"field"`
 	Reason string `json:"reason"`
+}
+
+// ForbiddenError defines model for ForbiddenError.
+type ForbiddenError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+// InternalError defines model for InternalError.
+type InternalError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+// NotFoundError defines model for NotFoundError.
+type NotFoundError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // SigninRequest defines model for SigninRequest.
@@ -48,6 +65,12 @@ type TokenResponse struct {
 
 	// ExpiresIn Token expiration time in seconds
 	ExpiresIn int `json:"expires_in"`
+}
+
+// UnauthorizedError defines model for UnauthorizedError.
+type UnauthorizedError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // UserProfileResponse defines model for UserProfileResponse.
@@ -72,19 +95,7 @@ type ValidationError struct {
 }
 
 // BadRequest defines model for BadRequest.
-type BadRequest = Error
-
-// ForbiddenError defines model for ForbiddenError.
-type ForbiddenError = Error
-
-// InternalError defines model for InternalError.
-type InternalError = Error
-
-// NotFoundError defines model for NotFoundError.
-type NotFoundError = Error
-
-// UnauthorizedError defines model for UnauthorizedError.
-type UnauthorizedError = Error
+type BadRequest = BadRequestError
 
 // SignInUserJSONRequestBody defines body for SignInUser for application/json ContentType.
 type SignInUserJSONRequestBody = SigninRequest

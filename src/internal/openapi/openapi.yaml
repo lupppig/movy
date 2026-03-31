@@ -148,7 +148,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/BadRequestError"
 
     ValidationError:
       description: The data provided failed business logic or validation rules.
@@ -162,28 +162,28 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/InternalError"
 
     UnauthorizedError:
       description: Authentication is required or the provided credentials are invalid.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/UnauthorizedError"
 
     ForbiddenError:
       description: The authenticated user does not have permission to access this resource.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ForbiddenError"
 
     NotFoundError:
       description: The requested resource was not found.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/NotFoundError"
 
   # --- Reusable Schemas (Go Structs) ---
   schemas:
@@ -280,6 +280,61 @@ components:
         details:
           type: string
           example: "database connection timeout"
+
+    BadRequestError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "INVALID_INPUT"
+        message:
+          type: string
+          example: "failed to decode request body"
+
+    UnauthorizedError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "UNAUTHORIZED_ACCESS"
+        message:
+          type: string
+          example: "invalid email or password"
+
+    ForbiddenError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "UNAUTHORIZED_ACCESS"
+        message:
+          type: string
+          example: "insufficient permissions"
+
+    NotFoundError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "RESOURCE_NOT_FOUND"
+        message:
+          type: string
+          example: "user not found"
+
+    InternalError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: "INTERNAL_SERVER_ERROR"
+        message:
+          type: string
+          example: "an internal server error occured"
 
     ValidationError:
       type: object

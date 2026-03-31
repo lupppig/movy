@@ -56,7 +56,7 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userRole, exists := c.Get("role")
 		if !exists {
-			c.JSON(http.StatusForbidden, openapi.Error{
+			c.JSON(http.StatusForbidden, openapi.ForbiddenError{
 				Code:    openapi.CodeUnauthorized,
 				Message: "access denied",
 			})
@@ -71,7 +71,7 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusForbidden, openapi.Error{
+		c.JSON(http.StatusForbidden, openapi.ForbiddenError{
 			Code:    openapi.CodeUnauthorized,
 			Message: "insufficient permissions",
 		})
