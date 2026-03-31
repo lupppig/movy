@@ -21,11 +21,25 @@ type FieldError struct {
 	Reason string `json:"reason"`
 }
 
+// SigninRequest defines model for SigninRequest.
+type SigninRequest struct {
+	Email    openapi_types.Email `json:"email"`
+	Password string              `json:"password"`
+}
+
 // SignupRequest defines model for SignupRequest.
 type SignupRequest struct {
 	Email    openapi_types.Email `json:"email"`
 	Name     string              `json:"name"`
 	Password string              `json:"password"`
+}
+
+// TokenResponse defines model for TokenResponse.
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+
+	// ExpiresIn Token expiration time in seconds
+	ExpiresIn int `json:"expires_in"`
 }
 
 // UserResponse defines model for UserResponse.
@@ -47,11 +61,20 @@ type BadRequest = Error
 // InternalError defines model for InternalError.
 type InternalError = Error
 
+// UnauthorizedError defines model for UnauthorizedError.
+type UnauthorizedError = Error
+
+// SignInUserJSONRequestBody defines body for SignInUser for application/json ContentType.
+type SignInUserJSONRequestBody = SigninRequest
+
 // RegisterUserJSONRequestBody defines body for RegisterUser for application/json ContentType.
 type RegisterUserJSONRequestBody = SignupRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Sign in with email and password
+	// (POST /auth/signin)
+	SignInUser(c *gin.Context)
 	// Register a new user
 	// (POST /auth/signup)
 	RegisterUser(c *gin.Context)
@@ -68,6 +91,19 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// SignInUser operation middleware
+func (siw *ServerInterfaceWrapper) SignInUser(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.SignInUser(c)
+}
 
 // RegisterUser operation middleware
 func (siw *ServerInterfaceWrapper) RegisterUser(c *gin.Context) {
@@ -122,6 +158,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.POST(options.BaseURL+"/auth/signin", wrapper.SignInUser)
 	router.POST(options.BaseURL+"/auth/signup", wrapper.RegisterUser)
 	router.GET(options.BaseURL+"/health", wrapper.HealthCheck)
 }

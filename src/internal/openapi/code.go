@@ -3,15 +3,16 @@ package openapi
 // Error Codes
 const (
 	// Generic System Errors
-	CodeInternalError    = "INTERNAL_SERVER_ERROR"
+	CodeInternalError      = "INTERNAL_SERVER_ERROR"
 	CodeServiceUnavailable = "SERVICE_UNAVAILABLE"
-	CodeNotFound         = "RESOURCE_NOT_FOUND"
+	CodeNotFound           = "RESOURCE_NOT_FOUND"
 
 	// Auth & Signup Errors
-	CodeInvalidInput     = "INVALID_INPUT"
-	CodeEmailTaken       = "EMAIL_ALREADY_EXISTS"
-	CodeWeakPassword     = "PASSWORD_TOO_WEAK"
-	CodeUnauthorized     = "UNAUTHORIZED_ACCESS"
+	CodeInvalidInput       = "INVALID_INPUT"
+	CodeEmailTaken         = "EMAIL_ALREADY_EXISTS"
+	CodeWeakPassword       = "PASSWORD_TOO_WEAK"
+	CodeUnauthorized       = "UNAUTHORIZED_ACCESS"
+	CodeInvalidCredentials = "INVALID_CREDENTIALS"
 
 	// // Booking Specific Errors
 	// CodeRoomUnavailable  = "ROOM_NOT_AVAILABLE"

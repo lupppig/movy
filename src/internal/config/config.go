@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 type APPConfig struct {
 	APP_NAME    string `mapstructure:"APP_NAME"`
 	API_VERSION string `mapstructure:"API_VERSION"`
 	APP_ENV     string `mapstructure:"APP_ENV"`
 	APP_PORT    string `mapstructure:"APP_PORT"`
-	APP_HOST string `mapstructure:"APP_HOST"`
+	APP_HOST    string `mapstructure:"APP_HOST"`
+	JWT_SECRET  string `mapstructure:"JWT_SECRET"`
 }
 
 type DatabaseConfig struct {
@@ -23,15 +23,13 @@ type DatabaseConfig struct {
 	DATABASE_NAME     string `mapstructure:"DATABASE_NAME"`
 	DATABASE_USER     string `mapstructure:"DATABASE_USER"`
 	DATABASE_PASSWORD string `mapstructure:"DATABASE_PASSWORD"`
-	USE_SSL           string   `mapstructure:"USE_SSL"`
+	USE_SSL           string `mapstructure:"USE_SSL"`
 }
 
 type BaseConfig struct {
-      APPConfig      `mapstructure:",squash"`
-	 DatabaseConfig `mapstructure:",squash"`
+	APPConfig      `mapstructure:",squash"`
+	DatabaseConfig `mapstructure:",squash"`
 }
-
-
 
 func LoadConfig() (*BaseConfig, error) {
 	v := viper.New()
@@ -71,7 +69,6 @@ func LoadConfig() (*BaseConfig, error) {
 
 	return &config, nil
 }
-
 
 func BindStructConfigs(v *viper.Viper, i interface{}) {
 	val := reflect.ValueOf(i)

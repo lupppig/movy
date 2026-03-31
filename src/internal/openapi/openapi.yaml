@@ -58,6 +58,32 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "500":
           $ref: "#/components/responses/InternalError"
+  /auth/signin:
+    post:
+      summary: Sign in with email and password
+      operationId: signInUser
+      tags:
+        - Auth
+      requestBody:
+        description: User sign in credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        "200":
+          description: Sign in successful, returns access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
 
 components:
   # --- Reusable Responses ---
@@ -83,6 +109,13 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
 
+    UnauthorizedError:
+      description: Invalid email or password.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
   # --- Reusable Schemas (Go Structs) ---
   schemas:
     # Requests
@@ -103,6 +136,18 @@ components:
           minLength: 8
           example: "strongPassword123!"
 
+    SigninRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          example: "strongPassword123!"
+
     # Responses
     UserResponse:
       type: object
@@ -119,6 +164,18 @@ components:
           type: string
           format: email
           example: "john@example.com"
+
+    TokenResponse:
+      type: object
+      required: [access_token, expires_in]
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
     
 
     # Error Objects
