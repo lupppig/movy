@@ -31,33 +31,32 @@ func Router(config config.BaseConfig, logger *logger.Logger, db *sql.DB) *gin.En
 	url := ginSwagger.URL("/internal/openapi/openapi.yaml") // Points to the static route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
-	// User auth routes
-	api := r.Group(config.API_VERSION)
+	a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
+
+	// Public routes (no auth required)
+	public := r.Group(config.API_VERSION)
 	{
-		authentication := api.Group("/auth")
+		auth := public.Group("/auth")
 		{
-			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
-			authentication.POST("/signup", a.RegisterUser)
-			authentication.POST("/signin", a.SignInUser)
+			auth.POST("/signup", a.RegisterUser)
+			auth.POST("/signin", a.SignInUser)
 		}
+	}
+
+	// Protected routes (auth required globally)
+	api := r.Group(config.API_VERSION)
+	api.Use(middleware.AuthMiddleware(config.JWT_SECRET, logger))
+	{
+		api.GET("/users/me", a.GetProfile)
+		api.GET("/users/:id", middleware.IDORMiddleware("id"), a.GetUser)
 
 		admin := api.Group("/admin")
-		admin.Use(middleware.AuthMiddleware(config.JWT_SECRET, logger))
 		admin.Use(middleware.RequireRole(role.Admin))
 		{
-			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
 			admin.GET("/users", a.GetUsers)
 			admin.GET("/users/:id", a.GetUser)
 			admin.POST("/users/:id/promote", a.PromoteUserToAdmin)
 			admin.POST("/users/:id/demote", a.DemoteUserFromAdmin)
-		}
-
-		users := api.Group("/users")
-		users.Use(middleware.AuthMiddleware(config.JWT_SECRET, logger))
-		{
-			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
-			users.GET("/me", a.GetProfile)
-			users.GET("/:id", middleware.IDORMiddleware("id"), a.GetUser)
 		}
 	}
 	return r
