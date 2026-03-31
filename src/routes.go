@@ -9,6 +9,8 @@ import (
 	"github.com/lupppig/movy/auth"
 	"github.com/lupppig/movy/internal/config"
 	"github.com/lupppig/movy/internal/logger"
+	"github.com/lupppig/movy/internal/middleware"
+	"github.com/lupppig/movy/internal/role"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -37,6 +39,17 @@ func Router(config config.BaseConfig, logger *logger.Logger, db *sql.DB) *gin.En
 			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
 			authentication.POST("/signup", a.RegisterUser)
 			authentication.POST("/signin", a.SignInUser)
+		}
+
+		admin := api.Group("/admin")
+		admin.Use(middleware.AuthMiddleware(config.JWT_SECRET, logger))
+		admin.Use(middleware.RequireRole(role.Admin))
+		{
+			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
+			admin.GET("/users", a.GetUsers)
+			admin.GET("/users/:id", a.GetUser)
+			admin.POST("/users/:id/promote", a.PromoteUserToAdmin)
+			admin.POST("/users/:id/demote", a.DemoteUserFromAdmin)
 		}
 	}
 	return r

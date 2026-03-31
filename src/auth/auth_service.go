@@ -8,6 +8,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 	"github.com/lupppig/movy/internal/openapi"
+	"github.com/lupppig/movy/internal/role"
 	"github.com/lupppig/movy/internal/utils"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -21,6 +22,7 @@ type UserReq struct {
 	Name     string              `valid:"required,length(2|50)"`
 	Email    openapi_types.Email `valid:"required,email"`
 	Password string              `valid:"required,length(8|255)"`
+	Role     string
 }
 
 func (u UserError) Error() string {
@@ -32,6 +34,7 @@ func (a *AuthDep) CreateUserService(req openapi.SignupRequest) (int, *openapi.Us
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
+		Role:     role.User,
 	}
 
 	_, err := govalidator.ValidateStruct(v)
@@ -129,7 +132,7 @@ func (a *AuthDep) SignInUserService(req openapi.SigninRequest) (int, *openapi.To
 		}
 	}
 
-	token, err := utils.GenerateJWT(user.ID, user.Email, a.Config.JWT_SECRET)
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.Role, a.Config.JWT_SECRET)
 	if err != nil {
 		a.Logger.Error().Err(err).Msg("failed to generate JWT token")
 		return http.StatusInternalServerError, nil, &UserError{

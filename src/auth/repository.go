@@ -12,11 +12,11 @@ func (a *AuthDep) CreateUser(ctx context.Context, userReq UserReq) (string, erro
 	var Id string
 
 	query := `
-        INSERT INTO users (name, email, password, created_at)
-        VALUES ($1, $2, $3, NOW()) RETURNING id
+        INSERT INTO users (name, email, password, role, created_at)
+        VALUES ($1, $2, $3, $4, NOW()) RETURNING id
     `
 
-	err := db.QueryRowContext(ctx, query, userReq.Name, string(userReq.Email), userReq.Password).Scan(&Id)
+	err := db.QueryRowContext(ctx, query, userReq.Name, string(userReq.Email), userReq.Password, userReq.Role).Scan(&Id)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to insert user and return ID: %w", err)
@@ -48,6 +48,7 @@ type UserRow struct {
 	Name     string
 	Email    string
 	Password string
+	Role     string
 }
 
 func (a *AuthDep) FindUserByEmail(ctx context.Context, email string) (*UserRow, error) {
