@@ -51,6 +51,14 @@ func Router(config config.BaseConfig, logger *logger.Logger, db *sql.DB) *gin.En
 			admin.POST("/users/:id/promote", a.PromoteUserToAdmin)
 			admin.POST("/users/:id/demote", a.DemoteUserFromAdmin)
 		}
+
+		users := api.Group("/users")
+		users.Use(middleware.AuthMiddleware(config.JWT_SECRET, logger))
+		{
+			a := auth.AuthDep{Logger: logger, Config: &config, DB: db}
+			users.GET("/me", a.GetProfile)
+			users.GET("/:id", middleware.IDORMiddleware("id"), a.GetUser)
+		}
 	}
 	return r
 }

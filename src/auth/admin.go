@@ -73,3 +73,14 @@ func (a *AuthDep) DemoteUserFromAdmin(c *gin.Context) {
 	}
 	c.JSON(status, resp)
 }
+
+func (a *AuthDep) GetProfile(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	status, user, uErr := a.GetUserService(userID.(string))
+	if uErr != nil {
+		a.Logger.Error().Err(uErr).Msg(uErr.Error())
+		c.JSON(status, uErr)
+		return
+	}
+	c.JSON(status, user)
+}
