@@ -15,7 +15,7 @@ func AuthMiddleware(secret string, logger *logger.Logger) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			logger.Warn().Msg("missing authorization header")
-			c.JSON(http.StatusUnauthorized, openapi.BadRequest{
+			c.JSON(http.StatusUnauthorized, openapi.UnauthorizedError{
 				Code:    openapi.CodeUnauthorized,
 				Message: "missing authorization header",
 			})
@@ -26,7 +26,7 @@ func AuthMiddleware(secret string, logger *logger.Logger) gin.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
 			logger.Warn().Msg("invalid authorization header format")
-			c.JSON(http.StatusUnauthorized, openapi.BadRequest{
+			c.JSON(http.StatusUnauthorized, openapi.UnauthorizedError{
 				Code:    openapi.CodeUnauthorized,
 				Message: "invalid authorization header format, expected: Bearer <token>",
 			})
@@ -37,7 +37,7 @@ func AuthMiddleware(secret string, logger *logger.Logger) gin.HandlerFunc {
 		claims, err := utils.ValidateJWT(tokenString, secret)
 		if err != nil {
 			logger.Warn().Err(err).Msg("invalid or expired token")
-			c.JSON(http.StatusUnauthorized, openapi.BadRequest{
+			c.JSON(http.StatusUnauthorized, openapi.UnauthorizedError{
 				Code:    openapi.CodeUnauthorized,
 				Message: "invalid or expired token",
 			})

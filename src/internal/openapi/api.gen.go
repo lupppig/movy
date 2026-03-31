@@ -4,8 +4,16 @@
 package openapi
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+const (
+	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
 // Error defines model for Error.
@@ -42,6 +50,14 @@ type TokenResponse struct {
 	ExpiresIn int `json:"expires_in"`
 }
 
+// UserProfileResponse defines model for UserProfileResponse.
+type UserProfileResponse struct {
+	Email openapi_types.Email `json:"email"`
+	Id    openapi_types.UUID  `json:"id"`
+	Name  string              `json:"name"`
+	Role  string              `json:"role"`
+}
+
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
 	Email openapi_types.Email `json:"email"`
@@ -58,8 +74,14 @@ type ValidationError struct {
 // BadRequest defines model for BadRequest.
 type BadRequest = Error
 
+// ForbiddenError defines model for ForbiddenError.
+type ForbiddenError = Error
+
 // InternalError defines model for InternalError.
 type InternalError = Error
+
+// NotFoundError defines model for NotFoundError.
+type NotFoundError = Error
 
 // UnauthorizedError defines model for UnauthorizedError.
 type UnauthorizedError = Error
@@ -81,6 +103,12 @@ type ServerInterface interface {
 	// check server health
 	// (GET /health)
 	HealthCheck(c *gin.Context)
+	// Get authenticated user profile
+	// (GET /users/me)
+	GetProfile(c *gin.Context)
+	// Get user by ID
+	// (GET /users/{id})
+	GetUserById(c *gin.Context, id openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -131,6 +159,47 @@ func (siw *ServerInterfaceWrapper) HealthCheck(c *gin.Context) {
 	siw.Handler.HealthCheck(c)
 }
 
+// GetProfile operation middleware
+func (siw *ServerInterfaceWrapper) GetProfile(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetProfile(c)
+}
+
+// GetUserById operation middleware
+func (siw *ServerInterfaceWrapper) GetUserById(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetUserById(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -161,4 +230,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/auth/signin", wrapper.SignInUser)
 	router.POST(options.BaseURL+"/auth/signup", wrapper.RegisterUser)
 	router.GET(options.BaseURL+"/health", wrapper.HealthCheck)
+	router.GET(options.BaseURL+"/users/me", wrapper.GetProfile)
+	router.GET(options.BaseURL+"/users/:id", wrapper.GetUserById)
 }
